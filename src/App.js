@@ -49,7 +49,6 @@ class App {
     if (safeIterationCount < 1) {
       throw new Error("시도할 횟수는 0이나 음수가 될 수 없습니다.");
     }
-    Console.print(`시도할 횟수(test): ${safeIterationCount}`);
 
     Console.print("\n실행 결과");
 
