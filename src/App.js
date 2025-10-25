@@ -2,7 +2,7 @@ import { Console } from "@woowacourse/mission-utils";
 class App {
   static ERROR_TITLE = "[ERROR]";
 
-  // 사용자가 입력한 law car names string을 restriction을 적용하여 배열로 validate 합니다.
+  // 사용자가 입력한 law car names string을 restriction을 적용하고 validate 하여 배열로 반환합니다.
   static restriction_carLength = 5;
   validateCarNames(carNames) {
     if (!carNames || typeof carNames !== "string") return [];
