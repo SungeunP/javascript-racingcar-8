@@ -1,6 +1,12 @@
-import { Console } from "@woowacourse/mission-utils";
+import { Console, MissionUtils } from "@woowacourse/mission-utils";
 class App {
   static ERROR_TITLE = "[ERROR]";
+
+  /**
+   * State variables
+   */
+  carNames;
+  iterationCount;
 
   // 사용자가 입력한 law car names string을 restriction을 적용하고 validate 하여 배열로 반환합니다.
   static restriction_carLength = 5;
@@ -23,34 +29,86 @@ class App {
     });
   }
 
-  async run() {
+  // 레이싱 게임의 규칙에 따라 렌덤 값이 4 이상인 경우 true를 반환하여 move forward를 허용한다.
+  getMoveForward() {
+    const randomValue = MissionUtils.Random.pickNumberInRange(0, 9);
+    if (randomValue >= 4) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Stage 1: 레이싱에 참가할 자동차 명을 입력 받습니다.
+   */
+  async runStageReceiveCarNames() {
     const unsafeCarNames = await Console.readLineAsync(
       "경주할 자동차 이름을 입력하세요.(이름은 쉼표(,) 기준으로 구분)\n"
     );
-    const safeCarNames = this.validateCarNames(unsafeCarNames);
+    this.carNames = this.validateCarNames(unsafeCarNames);
     // Validate for `safeCarNames`
-    if (safeCarNames.length < 0) {
+    if (this.carNames.length < 1) {
       throw new Error(`${App.ERROR_TITLE} 경주할 자동차가 없습니다.`);
     }
+  }
 
+  /**
+   * Stage 2: 레이싱의 라운드 반복 횟수를 입력 받습니다.
+   */
+  async runStageReceiveIterateNumber() {
     const unsafeIterationCount = await Console.readLineAsync(
       "시도할 횟수는 몇 회인가요?\n"
     );
-    let safeIterationCount = -1;
     // validate string `unsafe_iterationCount`
     try {
-      safeIterationCount = Number.parseInt(unsafeIterationCount);
+      this.iterationCount = Number.parseInt(unsafeIterationCount);
     } catch (e) {
       throw new Error(
         `${App.ERROR_TITLE} 입력한 시도할 횟수가 숫자가 아닙니다. (${unsafeIterationCount})`
       );
     }
     // validate number `unsafe_iterationCount`
-    if (safeIterationCount < 1) {
-      throw new Error("시도할 횟수는 0이나 음수가 될 수 없습니다.");
+    if (this.iterationCount < 1) {
+      throw new Error(
+        `${App.ERROR_TITLE} 시도할 횟수는 0이나 음수가 될 수 없습니다.`
+      );
     }
+  }
 
+  /**
+   * Stage 3-1: 라운드에 참여한 자동차에 대해 순회하여 전진합니다.
+   */
+  iterateCars(carNames, carMovedArray) {
+    for (let j = 0; j < carNames.length; j++) {
+      if (this.getMoveForward()) {
+        carMovedArray[j] += "-";
+      }
+      Console.print(`${carNames[j]} : ${carMovedArray[j]}`);
+    }
+    return carMovedArray;
+  }
+  /**
+   * Stage 3: 게임을 플레이합니다.
+   */
+  runStageStartRace(iteration, carNames) {
+    let carMovedArray = Array.from({ length: carNames.length }, () => "");
     Console.print("\n실행 결과");
+    for (let i = 0; i < iteration; i++) {
+      carMovedArray = this.iterateCars(carNames, carMovedArray);
+      Console.print("");
+    }
+    return carMovedArray;
+  }
+
+  async run() {
+    await this.runStageReceiveCarNames();
+
+    await this.runStageReceiveIterateNumber();
+
+    const result = await this.runStageStartRace(
+      this.iterationCount,
+      this.carNames
+    );
 
     Console.print(`최종 우승자 : pobi, jun`);
   }
