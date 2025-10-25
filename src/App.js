@@ -100,6 +100,17 @@ class App {
     return carMovedArray;
   }
 
+  runStagePrintWinner(result, carNames) {
+    const moveLengths = result.map((item) => item.length);
+    const maxMoveLength = Math.max(...moveLengths);
+
+    const winners = carNames.filter(
+      (carName, i) => result[i].length === maxMoveLength
+    );
+
+    Console.print(`최종 우승자 : ${winners.join(", ")}`);
+  }
+
   async run() {
     await this.runStageReceiveCarNames();
 
@@ -110,7 +121,7 @@ class App {
       this.carNames
     );
 
-    Console.print(`최종 우승자 : pobi, jun`);
+    this.runStagePrintWinner(result, this.carNames);
   }
 }
 
