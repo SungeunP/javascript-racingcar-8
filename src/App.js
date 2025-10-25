@@ -33,9 +33,23 @@ class App {
       throw new Error(`${App.ERROR_TITLE} 경주할 자동차가 없습니다.`);
     }
 
-    const unsafe_iterationCount = await Console.readLineAsync(
+    const unsafeIterationCount = await Console.readLineAsync(
       "시도할 횟수는 몇 회인가요?\n"
     );
+    let safeIterationCount = -1;
+    // validate string `unsafe_iterationCount`
+    try {
+      safeIterationCount = Number.parseInt(unsafeIterationCount);
+    } catch (e) {
+      throw new Error(
+        `${App.ERROR_TITLE} 입력한 시도할 횟수가 숫자가 아닙니다. (${unsafeIterationCount})`
+      );
+    }
+    // validate number `unsafe_iterationCount`
+    if (safeIterationCount < 1) {
+      throw new Error("시도할 횟수는 0이나 음수가 될 수 없습니다.");
+    }
+    Console.print(`시도할 횟수(test): ${safeIterationCount}`);
 
     Console.print("\n실행 결과");
 
