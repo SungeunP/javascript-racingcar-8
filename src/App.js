@@ -69,7 +69,7 @@ class App {
     const unsafeIterationCount = await Console.readLineAsync(
       "시도할 횟수는 몇 회인가요?\n"
     );
-    // validate string `unsafe_iterationCount`
+    // validate string `unsafeIterationCount`
     const count = Number(unsafeIterationCount);
     if (isNaN(count)) {
       throw new Error(
@@ -77,13 +77,12 @@ class App {
       );
     }
 
-    if (count < 1)
-      if (count < 1 || !Number.isInteger(count)) {
-        // validate number `unsafe_iterationCount`
-        throw new Error(
-          `${App.ERROR_TITLE} 시도할 횟수는 1 이상의 정수여야 합니다.`
-        );
-      }
+    if (count < 1 || !Number.isInteger(count)) {
+      // validate number `unsafeIterationCount`
+      throw new Error(
+        `${App.ERROR_TITLE} 시도할 횟수는 1 이상의 정수여야 합니다.`
+      );
+    }
 
     this.iterationCount = count;
   }
@@ -94,12 +93,12 @@ class App {
   iterateCars(carNames, carMovedArray) {
     const newCarMovedArray = [...carMovedArray];
     for (let j = 0; j < carNames.length; j++) {
-      if (this.getMoveForward()) {
-        carMovedArray[j] += "-";
+      if (this.isMoveForward()) {
+        newCarMovedArray[j] += "-";
       }
-      Console.print(`${carNames[j]} : ${carMovedArray[j]}`);
+      Console.print(`${carNames[j]} : ${newCarMovedArray[j]}`);
     }
-    return carMovedArray;
+    return newCarMovedArray;
   }
   /**
    * Stage 3: 게임을 플레이합니다.
