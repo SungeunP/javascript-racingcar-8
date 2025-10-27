@@ -1,6 +1,7 @@
 import { Console, MissionUtils } from "@woowacourse/mission-utils";
 class App {
   static ERROR_TITLE = "[ERROR]";
+  static restriction_carLength = 5;
 
   /**
    * State variables
@@ -8,29 +9,38 @@ class App {
   carNames;
   iterationCount;
 
+  constructor() {
+    this.carNames = [];
+    this.iterationCount = 0;
+  }
+
   // 사용자가 입력한 law car names string을 restriction을 적용하고 validate 하여 배열로 반환합니다.
-  static restriction_carLength = 5;
   validateCarNames(carNames) {
     if (!carNames || typeof carNames !== "string") return [];
 
     const splitedResult = carNames.split(",");
-    return splitedResult.filter((item) => {
-      if (item.length < 1) {
+
+    splitedResult.forEach((item) => {
+      const trimmedItem = item.trim();
+      if (trimmedItem.length < 1) {
         throw new Error(
           `${App.ERROR_TITLE} 경주할 자동차의 이름이 비어있습니다.`
         );
       }
-      if (item.length > App.restriction_carLength) {
+      if (trimmedItem.length > App.restriction_carLength) {
         throw new Error(
           `${App.ERROR_TITLE} 경주할 자동차의 이름이 5자가 넘습니다. (${item})`
         );
       }
-      return item.trim() !== "";
     });
+
+    return splitedResult
+      .map((name) => name.trim())
+      .filter((name) => name.length > 0);
   }
 
   // 레이싱 게임의 규칙에 따라 렌덤 값이 4 이상인 경우 true를 반환하여 move forward를 허용한다.
-  getMoveForward() {
+  isMoveForward() {
     const randomValue = MissionUtils.Random.pickNumberInRange(0, 9);
     if (randomValue >= 4) {
       return true;
@@ -60,25 +70,29 @@ class App {
       "시도할 횟수는 몇 회인가요?\n"
     );
     // validate string `unsafe_iterationCount`
-    try {
-      this.iterationCount = Number.parseInt(unsafeIterationCount);
-    } catch (e) {
+    const count = Number(unsafeIterationCount);
+    if (isNaN(count)) {
       throw new Error(
         `${App.ERROR_TITLE} 입력한 시도할 횟수가 숫자가 아닙니다. (${unsafeIterationCount})`
       );
     }
-    // validate number `unsafe_iterationCount`
-    if (this.iterationCount < 1) {
-      throw new Error(
-        `${App.ERROR_TITLE} 시도할 횟수는 0이나 음수가 될 수 없습니다.`
-      );
-    }
+
+    if (count < 1)
+      if (count < 1 || !Number.isInteger(count)) {
+        // validate number `unsafe_iterationCount`
+        throw new Error(
+          `${App.ERROR_TITLE} 시도할 횟수는 1 이상의 정수여야 합니다.`
+        );
+      }
+
+    this.iterationCount = count;
   }
 
   /**
    * Stage 3-1: 라운드에 참여한 자동차에 대해 순회하여 전진합니다.
    */
   iterateCars(carNames, carMovedArray) {
+    const newCarMovedArray = [...carMovedArray];
     for (let j = 0; j < carNames.length; j++) {
       if (this.getMoveForward()) {
         carMovedArray[j] += "-";
@@ -100,6 +114,9 @@ class App {
     return carMovedArray;
   }
 
+  /**
+   * Stage 4: 우승자를 출력합니다.
+   */
   runStagePrintWinner(result, carNames) {
     const moveLengths = result.map((item) => item.length);
     const maxMoveLength = Math.max(...moveLengths);
@@ -112,16 +129,17 @@ class App {
   }
 
   async run() {
-    await this.runStageReceiveCarNames();
+    try {
+      await this.runStageReceiveCarNames();
+      await this.runStageReceiveIterateNumber();
 
-    await this.runStageReceiveIterateNumber();
+      const result = this.runStageStartRace(this.iterationCount, this.carNames);
 
-    const result = await this.runStageStartRace(
-      this.iterationCount,
-      this.carNames
-    );
-
-    this.runStagePrintWinner(result, this.carNames);
+      this.runStagePrintWinner(result, this.carNames);
+    } catch (error) {
+      Console.print(error.message);
+      throw error;
+    }
   }
 }
 
